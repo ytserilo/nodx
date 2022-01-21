@@ -1,0 +1,141 @@
+.block-instructions{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: all 0.5s;
+}
+.block-instructions .wrapper{
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: all 0.5s;
+  opacity: 0;
+  z-index: -1;
+}
+.block-instructions .wrapper:nth-child(1){
+  display: flex;
+  opacity: 1;
+  z-index: 1;
+}
+.block-instructions .wrapper > div{
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 15px;
+  min-width: 280px;
+  max-width: 600px;
+}
+.block-instructions .wrapper > div p{
+  font-family: monospace;
+  font-size: 15px;
+  text-align: center;
+  width: 70%;
+  display: block;
+  margin: 25px auto;
+}
+.block-instructions .wrapper > div img{
+  box-shadow: 0px 0px 17px -2px grey;
+  width: 80%;
+  display: block;
+  margin: 20px auto;
+  border-radius: 15px;
+}
+.block-instructions .wrapper .step-3 .inner-block{
+  display: flex;
+  width: 80%;
+  margin: 10px auto;
+}
+.block-instructions .wrapper .step-3 img{
+  border-radius: 50%;
+  width: 125px;
+  height: 125px;
+}
+.step-4 video{
+  width: 80%;
+  margin: 20px auto;
+  box-shadow: 0px 0px 9px -1px grey;
+  border-radius: 15px;
+}
+.block-instructions .wrapper > div .controll-block{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 25px;
+  position: relative;
+}
+
+.block-instructions .wrapper > div .controll-block .next-btn,
+.block-instructions .wrapper > div .controll-block .skip-btn,
+.block-instructions .wrapper > div .controll-block .back-btn,
+.block-instructions .wrapper > div .controll-block .close-btn{
+  background: none;
+  border: none;
+  border-radius: 50%;
+}
+
+.block-instructions .wrapper > div .controll-block .next-btn svg,
+.block-instructions .wrapper > div .controll-block .skip-btn svg,
+.block-instructions .wrapper > div .controll-block .back-btn svg,
+.block-instructions .wrapper > div .controll-block .close-btn svg{
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: 2px solid green;
+  padding: 2.5px;
+  cursor: pointer;
+}
+.block-instructions .wrapper > div .controll-block .next-btn path,
+.block-instructions .wrapper > div .controll-block .skip-btn path,
+.block-instructions .wrapper > div .controll-block .back-btn path,
+.block-instructions .wrapper > div .controll-block .close-btn path{
+  fill: green;
+}
+.block-instructions .wrapper > div .controll-block .skip-btn path{
+  fill: #FF9900;
+}
+.block-instructions .wrapper > div .controll-block .back-btn path{
+  fill: gray;
+}
+.block-instructions .wrapper > div .controll-block .close-btn path{
+  fill: #CC3300;
+}
+.block-instructions .wrapper > div .controll-block .skip-btn svg{
+  border: 2px solid  #FF9900;
+}
+.block-instructions .wrapper > div .controll-block .back-btn svg{
+  border: 2px solid gray;
+}
+.block-instructions .wrapper > div .controll-block .close-btn svg{
+  border: 2px solid #CC3300;
+}
+
+.block-instructions .controll-block .tooltip{
+  position: absolute;
+  width: 90%;
+  display: flex;
+  flex-direction: row-reverse;
+  background: white;
+  box-shadow: 0px 0px 20px 0px grey;
+  border-radius: 15px;
+  bottom: 40px;
+  transition: all 0.3s;
+  opacity: 0;
+}
+.block-instructions .controll-block .tooltip p{
+  width: 50%;
+}
+.block-instructions .controll-block .tooltip img{
+  width: 100px;
+  height: 80px;
+}

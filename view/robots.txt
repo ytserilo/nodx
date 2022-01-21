@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /404/
+Allow: /
+Sitemap: https://nod-x.com/sitemap.xml

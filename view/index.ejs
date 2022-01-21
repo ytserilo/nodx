@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" translate="no">
+  <head>
+    <meta charset="utf-8">
+    <title><%=langObj.title %></title>
+    <meta name="keywords" content="<%=langObj.meta_keywords %>" />
+    <meta name="description" content="<%=langObj.meta_description %>" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/meta_images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/meta_images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/meta_images/favicon-16x16.png">
+    <link rel="manifest" href="/static/img/meta_images/site.webmanifest">
+    <link rel="mask-icon" href="/static/img/meta_images/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#333333">
+    <meta name="theme-color" content="#ffffff">
+
+    <meta property="og:title" content="<%=langObj.og_title %>">
+    <meta property="og:description" content="<%=langObj.og_description %>">
+    <meta property="og:image" content="/static/img/meta_images/load-icon3.png">
+
+    <meta name="lang-obj" >
+    <script type="text/javascript">
+      window.langObj = {"node_offers": '<%=langObj.components_data %>'};
+
+      function check_local(){
+        let default_lang = "/" + navigator.language.split("-")[0] + "/";
+        if(window.location.pathname == "/"){
+          fetch("/load_local?lang={}".replace("{}", navigator.language.split("-")[0]), {
+            method: "GET",
+          }).then(async function(response){
+            let url = new URL(window.location.href);
+            let result = await response.json();
+
+            if(result.type == "success"){
+              window.location.href = url.origin + default_lang + url.search;
+            }
+            else{
+              window.location.href = url.origin + "/en/" + url.search;
+            }
+
+          });
+
+        }
+      }
+      check_local();
+      navigator.serviceWorker.register("/static/sw.js", {"scope": "/"}).then(function(registration){});
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script src="/static/glMatrix.js" type="text/javascript"></script>
+    <style media="screen">
+      #canvas, #text-canvas{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+      #add-node{
+        position: fixed;
+        z-index: 99
+      }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      attribute vec3 aPosition;
+
+      uniform mat4 VMatrix;
+      uniform mat4 PMatrix;
+
+      attribute vec2 a_texture_coords;
+      varying vec2 texture_coords;
+
+      void main(){
+        texture_coords = a_texture_coords;
+
+        gl_Position = PMatrix * VMatrix * vec4(aPosition, 1.0);
+      }
+    </script>
+    <script id="vertex-shader-lines" type="x-shader/x-vertex">
+      attribute vec3 aPosition;
+
+      uniform mat4 VMatrix;
+      uniform mat4 PMatrix;
+
+      void main(){
+        gl_Position = PMatrix * VMatrix * vec4(aPosition, 1.0);
+      }
+    </script>
+    <script id="fragment-shader-lines" type="x-shader/x-fragment">
+      precision highp float;
+      void main(){
+        gl_FragColor = vec4(0.8, 0.8, 0.8, 1.0);
+      }
+    </script>
+    <script id="pick-vertex-shader" type="x-shader/x-vertex">
+      attribute vec3 aPosition;
+
+      uniform mat4 VMatrix;
+      uniform mat4 PMatrix;
+
+      varying vec3 coord;
+
+      void main(){
+        coord = aPosition;
+
+        gl_Position = PMatrix * VMatrix * vec4(aPosition, 1.0);
+      }
+    </script>
+    <script id="pick-fragment-shader" type="x-shader/x-fragment">
+      precision highp float;
+      float PI = 3.14159265359;
+
+      uniform vec3 pick_color;
+      uniform vec2 top_left_corner_coords;
+
+      uniform float radius;
+      varying vec3 coord;
+
+      void main(){
+        vec2 center = top_left_corner_coords + radius;
+
+        float dx = center.x - coord.x;
+        float dy = center.y - coord.y;
+
+        float ln = sqrt((dx * dx) + (dy * dy));
+        if(ln > radius){
+          discard;
+        }
+
+        gl_FragColor = vec4(pick_color, 1.0);
+      }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      precision highp float;
+      float PI = 3.14159265359;
+
+      uniform sampler2D uSampler;
+      varying vec2 texture_coords;
+
+
+      void main(){
+        float dx = texture_coords.x - 0.5;
+        float dy = texture_coords.y - 0.5;
+
+        float ln = sqrt((dx * dx) + (dy * dy));
+
+        vec2 onePixel = vec2(1.0, 1.0) / 1024.0;
+        vec4 color = (
+          texture2D(uSampler, texture_coords) +
+          texture2D(uSampler, texture_coords + vec2(onePixel.x, 0.0)) +
+          texture2D(uSampler, texture_coords + vec2(-onePixel.x, 0.0)) +
+          texture2D(uSampler, texture_coords + vec2(0.0, onePixel.y)) +
+          texture2D(uSampler, texture_coords + vec2(0.0, -onePixel.y)) +
+
+          texture2D(uSampler, texture_coords + vec2(onePixel.x, onePixel.y)) +
+          texture2D(uSampler, texture_coords + vec2(-onePixel.x, onePixel.y)) +
+          texture2D(uSampler, texture_coords + vec2(onePixel.x, onePixel.y)) +
+          texture2D(uSampler, texture_coords + vec2(-onePixel.x, -onePixel.y))
+        ) / 9.0;
+
+        float b = 0.5;
+        if(ln > b){
+          discard;
+        }
+
+        gl_FragColor = color;
+      }
+    </script>
+    <link rel="stylesheet" href="/static/styles/style.css">
+    <link rel="stylesheet" href="/static/styles/insctruction.css">
+    <link rel="stylesheet" href="/static/styles/scroll.css">
+  </head>
+  <body>
+    <span id="test-char" style="opacity: 0; font-size: 10rem; font-family: monospace;">Y</span>
+    <div class=loader-modal>
+      <div class="body">
+        <img src="/static/img/meta_images/load-icon3.png" alt="">
+        <div class="loader-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      let animstop = false;
+      async function anim(){
+        let dots = document.querySelectorAll(".loader-dots span");
+
+        document.addEventListener("program-ready", function(){
+          animstop = true;
+          document.querySelector(".loader-modal").style.opacity = 0;
+          document.querySelector(".loader-modal").style.zIndex = -1;
+        });
+
+        for(let i = 0; i < 3; i++){
+          dots[i].style.opacity = 0;
+          let promise = new Promise((resolve, reject) => {
+            setTimeout(function(){
+              dots[i].style.opacity = 1;
+              resolve();
+              if(i == 3){
+                dots[0].style.opacity = 0;
+              }
+            }, 500);
+          });
+          await promise;
+        }
+
+
+        if(!animstop){
+          await anim();
+        }
+        else{
+          return;
+        }
+      }
+      anim();
+    </script>
+
+    <div class="upload-block-info">
+      <div class="body">
+        <div id="upload-info" class="empty-space">
+          <img src="/static/img/users/nothing_here.jpg" />
+          <span><%=langObj.download_requests_info %></span>
+        </div>
+
+        <button type="button" id="close-upload-block-btn" class="close-btn">
+          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512">
+            <path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path>
+          </svg>
+        </button>
+        <button type="button" id="back-upload-block-btn" class="back-btn" name="button">
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="chevron-left" class="svg-inline--fa fa-chevron-left fa-w-10" role="img" viewBox="0 0 320 512" style="padding: 1px;">
+            <path fill="currentColor" d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path>
+          </svg>
+        </button>
+
+        <div class="users">
+
+        </div>
+        <div class="upload-files">
+
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      document.querySelector("#close-upload-block-btn").onclick = function(){
+        let upload_block_info = document.querySelector(".upload-block-info");
+        upload_block_info.style.zIndex = -1;
+        upload_block_info.style.opacity = 0;
+      }
+      document.querySelector("#back-upload-block-btn").onclick = function(){
+        let upload_block_info = document.querySelector(".upload-block-info");
+        upload_block_info.querySelector(".users").setAttribute("style", "transform: translateX(0%); opacity: 1;");
+      }
+    </script>
+
+    <div class="share-modal">
+      <div class="body">
+        <p><%=langObj.copy_phrase %></p>
+        <div class="link-block">
+          <div class="info-block"><span><%=langObj.copy_result %></span></div>
+          <p id="link">http://127.0.0.1:8000/?id=asdasdasdasdasdasdas</p>
+          <textarea id="t-link" style="opacity: 0; z-index: -1; position: fixed;" name="name" rows="8" cols="80"></textarea>
+          <button id="copy-to-clipboard">
+            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="far" data-icon="copy" class="svg-inline--fa fa-copy fa-w-14" role="img" viewBox="0 0 448 512"><path fill="currentColor" d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="join-block" style="">
+          <p style="margin: 0;padding: 0;"><%=langObj.join_text_or %></p>
+          <p style="margin-bottom: 20px;padding: 0;margin-top: 0;"><%=langObj.join_text %></p>
+          <div class="join-body">
+            <div>
+              <input type="text" id="join-link" />
+              <button type="button" id="join-btn"><%=langObj.join_btn %></button>
+            </div>
+            <div>
+              <span class="error"><%=langObj.join_error %></span>
+            </div>
+
+          </div>
+        </div>
+        <button type="button" name="button" onclick="share_modal_close()" id="share-close"><%= langObj.got_it_btn %></button>
+        <script src="/static/js/share.js"></script>
+      </div>
+    </div>
+
+    <div class="info-modal">
+      <div class="body">
+        <button onclick="close_info_modal()" type="button" name="button">
+          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+        </button>
+        <div style="display: flex; flex-direction: column;">
+          <img src="/static/img/meta_images/load-icon3.png" style="width: 50%;display: block;margin: 0 auto;" alt="NodX" />
+          <p style="margin: 0;margin-bottom: 20px;"><%=langObj.info_block.description %></p>
+        </div>
+        <div style="display: flex;flex-direction: row;margin: 20px 0px;">
+          <img src="/static/img/user.jpg" style="width: 150px;">
+          <p><%=langObj.info_block.instruction.text %> <a class="open-instruction" onclick="open_instruction()"><%=langObj.info_block.instruction.link_text %></a></p>
+        </div>
+        <div>
+          <img src="/static/img/webrtc.svg" style="width: 150px;">
+          <p><%=langObj.info_block.tech.text %>
+            <a target="_blank" href="https://webrtc.org"><%=langObj.info_block.tech.link %></a>
+          </p>
+        </div>
+        <div>
+          <div style="margin-top: 20px;">
+            <div>
+              <a target="_blank" style="text-decoration: none;" href="https://www.instagram.com/yatsemirsky/">
+                <img src="/static/img/insta.png" style="width: 3rem;" />
+              </a>
+              <a target="_blank" style="text-decoration: none;" href="https://github.com/ytserilo/nodx">
+                <img src="/static/img/github.png" style="width: 3rem;">
+              </a>
+            </div>
+
+            <div class="self-info">
+              <span style="position: relative; padding: 10px; word-break: break-all;">
+                <span class="background"><%=langObj.copy_result %></span>
+                yatsemirsky.yaroslav@gmail.com
+              </span>
+              <textarea id="gmail-link" style="opacity: 0; z-index: -1; position: fixed;" name="name" rows="8" cols="80"></textarea>
+              <button style="position: relative; right: 0;" id="copy-email">
+                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="far" data-icon="copy" class="svg-inline--fa fa-copy fa-w-14" role="img" viewBox="0 0 448 512"><path fill="currentColor" d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"></path>
+                </svg>
+              </button>
+              <script type="text/javascript">
+              document.querySelector("#copy-email").onclick = function(){
+                let copyTextarea = document.querySelector("#gmail-link");
+                copyTextarea.value = "yatsemirsky.yaroslav@gmail.com";
+                copyTextarea.focus();
+                copyTextarea.select();
+
+                try {
+                  let successful = document.execCommand('copy');
+
+                  document.querySelector(".self-info .background").setAttribute("style", "opacity: 1; z-index: 2;");
+                  setTimeout(function(){
+                    document.querySelector(".self-info .background").setAttribute("style", "opacity: 0; z-index: -1;");
+                  }, 1000)
+
+                } catch (err) {
+                  console.log("error");
+                }
+              }
+              </script>
+            </div>
+        </div>
+        </div>
+      </div>
+      <script type="text/javascript">
+        function close_info_modal(){
+          document.querySelector(".info-modal").setAttribute("style", "opacity: 0; z-index: -1;");
+        }
+        function open_instruction(){
+          document.querySelector(".info-modal").setAttribute("style", "opacity: 0; z-index: -1;");
+          document.querySelector(".block-instructions").style.opacity = 1;
+          document.querySelector(".block-instructions").style.zIndex = 999;
+        }
+      </script>
+
+    </div>
+
+    <div class="lang-modal">
+      <div class="body">
+        <button onclick="close_lang_modal()" class="close" type="button" name="button">
+          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+        </button>
+        <p>Ваш родной язык Русский?</p>
+        <button class="choose-language-btn">Перейти на руcский <img src="/static/img/ru.svg"/></button>
+        <button class="choose-language-btn">Stay at english <img src="/static/img/us.svg"/></button>
+      </div>
+      <script type="text/javascript">
+        function close_lang_modal(){
+          document.querySelector(".lang-modal").setAttribute("style", "");
+        }
+      </script>
+    </div>
+
+    <button type="button" id="share-btn" name="button">
+      <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg>
+    </button>
+    <button type="button" id="info-btn" name="button">
+      <svg style="padding: 3px;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="question" class="svg-inline--fa fa-question fa-w-12" role="img" viewBox="0 0 384 512"><path fill="currentColor" d="M202.021 0C122.202 0 70.503 32.703 29.914 91.026c-7.363 10.58-5.093 25.086 5.178 32.874l43.138 32.709c10.373 7.865 25.132 6.026 33.253-4.148 25.049-31.381 43.63-49.449 82.757-49.449 30.764 0 68.816 19.799 68.816 49.631 0 22.552-18.617 34.134-48.993 51.164-35.423 19.86-82.299 44.576-82.299 106.405V320c0 13.255 10.745 24 24 24h72.471c13.255 0 24-10.745 24-24v-5.773c0-42.86 125.268-44.645 125.268-160.627C377.504 66.256 286.902 0 202.021 0zM192 373.459c-38.196 0-69.271 31.075-69.271 69.271 0 38.195 31.075 69.27 69.271 69.27s69.271-31.075 69.271-69.271-31.075-69.27-69.271-69.27z"/></svg>
+    </button>
+    <link rel="stylesheet" href="/static/styles/select.css">
+    <div class="language-switcher">
+      <div class="select">
+        <div class="selected" mode="close">
+          <img src="/static/img/ru.svg" />
+        </div>
+        <div class="dropdown">
+          <div onclick="get_option(this)" value="ru" class="option">
+            <p></p>
+            <img src="/static/img/ru.svg" />
+          </div>
+          <div onclick="get_option(this)" value="en" class="option">
+            <p></p>
+            <img src="/static/img/us.svg" />
+          </div>
+        </div>
+
+      </div>
+      <script type="text/javascript">
+        let selected_div = document.querySelector(".selected");
+        function init_view_lang(){
+          if(window.location.pathname != ""){
+            let language = window.location.pathname.replaceAll("/", "");
+            let obj = document.querySelector(".select .option[value='{}']".replace("{}", language));
+
+            if(obj){
+              document.querySelector(".selected img").src = obj.querySelector("img").src;
+            }
+          }
+        }
+        init_view_lang();
+
+        selected_div.onclick = function(){
+          if(selected_div.getAttribute("mode") == "close"){
+            selected_div.setAttribute("mode", "open");
+            document.querySelector(".select .dropdown").setAttribute(
+              "style", "bottom: calc(-100% - 4.6rem); height: 6.5rem;"
+            );
+          }
+          else{
+            selected_div.setAttribute("mode", "close");
+            document.querySelector(".select .dropdown").setAttribute(
+              "style", "bottom: 0; height: 0;"
+            );
+          }
+        }
+        function get_option(self){
+          let img = self.querySelector("img");
+          document.querySelector(".selected img").src = img.src;
+          selected_div.setAttribute("mode", "close");
+          document.querySelector(".select .dropdown").setAttribute(
+            "style", "bottom: 0; height: 0;"
+          );
+          document.cookie = "lang={}; path=/;".replace("{}", self.getAttribute("value"));
+          window.location.href = window.location.origin +
+                                 "/{}/".replace("{}", self.getAttribute("value")) +
+                                 window.location.search;
+        }
+      </script>
+    </div>
+
+    <script type="text/javascript">
+      document.querySelector("#share-btn").onclick = function(){
+        document.querySelector(".share-modal").setAttribute("style", "opacity: 1; z-index: 999;")
+      }
+      document.querySelector("#info-btn").onclick = function(){
+        document.querySelector(".info-modal").setAttribute("style", "opacity: 1; z-index: 999;")
+      }
+    </script>
+
+    <div class="files-upload">
+      <div class="upload-btn">
+          <svg class="btn-icon" aria-hidden="true"  focusable="false" data-prefix="fas" class="svg-inline--fa fa-arrow-down fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+            <path fill="currentColor" d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"></path>
+          </svg>
+      </div>
+
+      <div class="uploaded-files-container">
+        <div class="upload-modal-body">
+          <div class="close-modal-btn">
+            <svg aria-hidden="true" class="close-icon" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512">
+              <path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path>
+            </svg>
+          </div>
+          <div class="uploaded-files" style="width: calc(100% - 30px); height: calc(100% - 30%);">
+            <div class="upload-info-block">
+              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="file-upload" class="svg-inline--fa fa-file-upload fa-w-12" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm65.18 216.01H224v80c0 8.84-7.16 16-16 16h-32c-8.84 0-16-7.16-16-16v-80H94.82c-14.28 0-21.41-17.29-11.27-27.36l96.42-95.7c6.65-6.61 17.39-6.61 24.04 0l96.42 95.7c10.15 10.07 3.03 27.36-11.25 27.36zM377 105L279.1 7c-4.5-4.5-10.6-7-17-7H256v128h128v-6.1c0-6.3-2.5-12.4-7-16.9z"></path></svg>
+              <span><%=langObj.upload_text %></span>
+            </div>
+          </div>
+          <button type="button" name="button" id="add-files">
+            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg>
+          </button>
+        </div>
+      </div>
+      <script type="text/javascript">
+        const close_btn = document.querySelector(".close-modal-btn");
+        const open_btn = document.querySelector(".upload-btn");
+        close_btn.onclick = function(){
+          document.querySelector(".upload-modal-body").style.transform = "translate(-50%, 100%)";
+          document.querySelector(".uploaded-files-container").style.background = "rgba(255, 255, 255, 0)";
+          document.querySelector(".uploaded-files-container").style.zIndex = 0;
+          setTimeout(function(){open_btn.style.transform = "translate(50%, 0%)";}, 250)
+        }
+
+        open_btn.onclick = function(){
+           open_btn.style.transform = "translate(50%, 100%)";
+           setTimeout(function(){
+             document.querySelector(".upload-modal-body").style.transform = "translate(-50%, 0%)";
+             document.querySelector(".uploaded-files-container").style.background = "#333333db";
+             document.querySelector(".uploaded-files-container").style.zIndex = 999;
+           }, 300);
+        }
+      </script>
+    </div>
+    <div class="files-download">
+      <div class="download-info-block">
+        <img src="/static/img/users/nothing_here.jpg" id="download-info" class="empty-space"/>
+      </div>
+      <button type="button" id="close-download-modal-btn"><%=langObj.close_btn %></button>
+    </div>
+    <button type="button" name="button" id="open-download">
+      <svg class="download-btn" role="img" viewBox="0 0 59 70">
+        <path class="arrow" d="M30 10 L30 45 Z M43 30 L30 45 Z M30 45 L17 30 Z" fill="none" stroke="black"/>
+        <path class="alt" d="M7 52 L7 60 L52 60 L52 52" fill="none" stroke="black"/>
+      </svg>
+    </button>
+    <script type="text/javascript">
+      document.querySelector("#close-download-modal-btn").onclick = function(){
+        document.querySelector(".files-download").setAttribute("style", "transform: translate(0, -102%);");
+      }
+      document.querySelector("#open-download").onclick = function(){
+        document.querySelector(".files-download").setAttribute("style", "transform: translate(0, -0%);");
+      }
+    </script>
+    <div class="users-files">
+
+    </div>
+    <div class="download-modal-open">
+
+      <div class="down-arrow">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+    </div>
+
+    <div class="block-instructions">
+      <div class="wrapper">
+        <div class="step-1">
+          <p><%=langObj.instruction_part_one.title %></p>
+          <img src="/static/img/part1.png" />
+
+          <div class="controll-block">
+            <div id="checkbox-block" style="display:flex;">
+              <input type="checkbox" id="checkbox-input" />
+              <p style="width: 100%;margin: 0;">
+                <%=langObj.instruction_part_one.checkbox_text %>
+              </p>
+            </div>
+
+            <div class="tooltip">
+              <p><%=langObj.instruction_part_one.tooltip %></p>
+              <img src="/static/img/info.png" alt="" />
+            </div>
+
+            <div style="display: flex;flex-wrap: nowrap;">
+              <button title="<%=langObj.instruction_button.skip %>" type="button" name="button" onclick="close_func()" class="skip-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-double-right" class="svg-inline--fa fa-angle-double-right fa-w-14" role="img" viewBox="0 0 448 512"><path fill="currentColor" d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34zm192-34l-136-136c-9.4-9.4-24.6-9.4-33.9 0l-22.6 22.6c-9.4 9.4-9.4 24.6 0 33.9l96.4 96.4-96.4 96.4c-9.4 9.4-9.4 24.6 0 33.9l22.6 22.6c9.4 9.4 24.6 9.4 33.9 0l136-136c9.4-9.2 9.4-24.4 0-33.8z"/></svg>
+              </button>
+              <button title="<%=langObj.instruction_button.next %>" type="button" onclick="next_func(1)" class="next-btn" name="button">
+                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-right" class="svg-inline--fa fa-angle-right fa-w-8" role="img" viewBox="0 0 256 512"><path fill="currentColor" d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="wrapper">
+        <div class="step-2">
+          <p><%=langObj.instruction_part_two.title %></p>
+          <div class="mouse" style="margin: 20px auto;"></div>
+          <div class="controll-block">
+            <button title="<%=langObj.instruction_button.back %>" type="button" onclick="back_func(0)" class="back-btn" name="button">
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-left" class="svg-inline--fa fa-angle-left fa-w-8" role="img" viewBox="0 0 256 512"><path fill="currentColor" d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>
+            </button>
+            <button title="<%=langObj.instruction_button.next %>" type="button" onclick="next_func(2)" class="next-btn" name="button">
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-right" class="svg-inline--fa fa-angle-right fa-w-8" role="img" viewBox="0 0 256 512"><path fill="currentColor" d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="wrapper">
+        <div class="step-3">
+          <div class="inner-block">
+            <img src="/static/img/you.png" />
+            <p><%=langObj.instruction_part_three.title_one %></p>
+          </div>
+          <div class="inner-block">
+            <p><%=langObj.instruction_part_three.title_two %></p>
+            <img src="/static/img/other.png" alt="" />
+          </div>
+
+          <div class="controll-block">
+            <button title="<%=langObj.instruction_button.back %>" type="button" onclick="back_func(1)" class="back-btn" name="button">
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-left" class="svg-inline--fa fa-angle-left fa-w-8" role="img" viewBox="0 0 256 512"><path fill="currentColor" d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>
+            </button>
+            <button title="<%=langObj.instruction_button.next %>" type="button" onclick="next_func(3)" class="next-btn" name="button">
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-right" class="svg-inline--fa fa-angle-right fa-w-8" role="img" viewBox="0 0 256 512"><path fill="currentColor" d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="wrapper">
+        <div class="step-4">
+          <p><%=langObj.instruction_part_foure.fun %><br/><%=langObj.instruction_part_foure.title %></p>
+          <video id="preview-video" src="/static/img/part4.mp4" autoplay loop playsinline></video>
+          <div class="controll-block">
+            <button title="<%=langObj.instruction_button.back %>" type="button" onclick="back_func(2)" class="back-btn" name="button">
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-left" class="svg-inline--fa fa-angle-left fa-w-8" role="img" viewBox="0 0 256 512"><path fill="currentColor" d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>
+            </button>
+            <button title="<%=langObj.instruction_button.close %>" type="button" onclick="close_func()" class="close-btn" name="button">
+              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/static/js/instruction.js"></script>
+
+    <canvas id="canvas"></canvas>
+    <canvas id="text-canvas"></canvas>
+    <script type="module" src="/static/bundle.js"></script>
+
+
+  </body>
+</html>

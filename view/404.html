@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/meta_images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/meta_images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/meta_images/favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>404</title>
+    <style media="screen">
+      body{
+        background: #e5ffcf;
+      }
+      .container{
+        height: 70%;
+        max-width: 90%;
+        width: max-content;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+      }
+      .container img{
+        max-height: 80%;
+        width: 100%;
+      }
+      .container button{
+        width: 125px;
+        margin: 20px auto;
+        border: 2.5px solid black;
+        background: none;
+        border-radius: 10px;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 15px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+      }
+      .container button:hover{
+        color: white;
+        background: #009b4c;
+        border: 2.5px solid #009b4c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img src="/static/img/404.png" />
+      <button type="button" onclick="back_to_home()" name="button">Back to Home</button>
+      <script type="text/javascript">
+        function back_to_home(){
+          window.location.href = window.location.origin;
+        }
+      </script>
+    </div>
+
+  </body>
+</html>
