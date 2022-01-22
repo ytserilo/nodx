@@ -5,7 +5,7 @@ const WebSocket = require('ws');
 
 const app = express();
 const jsonParser = express.json();
-app.set("view engine", "ejs");
+app.set("view engine", "hbs");
 const server = http.createServer(app)
 
 function uuidv4() {
@@ -53,7 +53,7 @@ app.get("/:lang", function(request, response){
   let lang_mode = request.params["lang"];
 
   if(lang[lang_mode]){
-    response.render(__dirname + "/view/index.ejs", {
+    response.render(__dirname + "/view/index.hbs", {
       "langObj": lang[lang_mode],
       "type": lang_mode
     })
@@ -85,7 +85,7 @@ app.get("/", function(request, response){
     response.redirect(redirect_link);
   }
   else{
-    response.render(__dirname + "/view/index.ejs", {
+    response.render(__dirname + "/view/index.hbs", {
       "langObj": lang["en"],
       "type": "en"
     });
