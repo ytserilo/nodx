@@ -2,7 +2,7 @@ module.exports = {
   "ru": {
     "language": {
       "ru": "Русский",
-      "en": "Английский",
+      "en": "Английский"
     },
 
     "h1_title": "NodX",
@@ -64,7 +64,7 @@ module.exports = {
   "en": {
     "language": {
       "ru": "Russian",
-      "en": "English",
+      "en": "English"
     },
 
     "h1_title": "NodX",

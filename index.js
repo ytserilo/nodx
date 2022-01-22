@@ -48,17 +48,14 @@ app.get("/sitemap.xml", function(request, response){
 app.get("/404/", function(request, response){
   response.sendFile(__dirname + "/view/404.html");
 });
-app.get("/test", function(request, response){
-  response.sendFile(__dirname + "/view/test_html.html");
-});
+
 app.get("/:lang", function(request, response){
   let lang_mode = request.params["lang"];
 
   if(lang[lang_mode]){
-    response.render(__dirname + "/view/index.ejs", {
-      "langObj": lang[lang_mode],
-      "type": lang_mode
-    })
+    let dct = lang[lang_mode];
+    dct.type = lang_mode;
+    response.render(__dirname + "/view/index.ejs", dct);
   }
   else{
     response.redirect("/en/");
@@ -87,10 +84,10 @@ app.get("/", function(request, response){
     response.redirect(redirect_link);
   }
   else{
-    response.render(__dirname + "/view/index.ejs", {
-      "langObj": lang["en"],
-      "type": "en"
-    });
+    let dct = lang["en"];
+    dct.type = "en";
+    response.render(__dirname + "/view/index.ejs", dct);
+
   }
 });
 
