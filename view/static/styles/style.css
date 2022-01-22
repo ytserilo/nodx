@@ -1,3 +1,4 @@
+
 ::-webkit-scrollbar {
   width: 7px;
 }
@@ -518,8 +519,13 @@
   width: auto;
   margin: 10px;
 }
-.users-files file-elem .file-container p{
+.users-files file-elem .file-container span{
   word-break: break-all;
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
 }
 .users-files file-elem .file-container{
   text-align: center;
@@ -764,10 +770,11 @@ file-elem .file-container button:hover{
 .upload-block-info .body .upload-files .upload-file-obj img{
   width: 70px;
 }
-.upload-block-info .body .upload-files .upload-file-obj p{
+.upload-block-info .body .upload-files .upload-file-obj span{
   margin: 0;
+  display: block;
 }
-.upload-block-info .body .upload-files .upload-file-obj p:nth-child(1){
+.upload-block-info .body .upload-files .upload-file-obj span:nth-child(1){
   margin-top: 5px;
 }
 .upload-block-info .body .upload-files .upload-file-obj .gray-backgound{
@@ -900,6 +907,13 @@ file-elem .file-container button:hover{
   padding: 20px;
   display: block;
   margin: 0 auto;
+}
+.share-modal .body span{
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
 }
 .lang-modal .body .choose-language-btn{
   background: none;

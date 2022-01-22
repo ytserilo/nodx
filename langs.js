@@ -4,6 +4,12 @@ module.exports = {
       "ru": "Русский",
       "en": "Английский",
     },
+
+    "h1_title": "NodX",
+    "page_description1": "NodX — это веб-приложение для безопасного обмена информацией. Обменивайтесь цифровым контентом в режиме реального времени без облачного хранилища.",
+    "page_description2": "NodX позволяет отправлять файлы на другие устройства без какой-либо конфигурации - просто откройте https://nod-x.com/ на всех устройствах, и они увидят друг друга. Просто нажмите кнопку + в левом углу страницы, чтобы создать комнату с уникальным URL-адресом, и поделиться этим URL-адресом с другими людьми, которым вы хотите отправить файл. Как только они откроют эту страницу в браузере на своих устройствах, вы увидите аватары друг друга.",
+    "page_description3": "Приложение чем-то похоже на SHAREit, за исключением того, что для его работы нужен интернет и еще одно исключение — его не нужно устанавливать на свое устройство.",
+
     "meta_keywords": "nodx, p2p fileshare, web airdrop, web shareit, веб шарейт, веб shareit на пк, шареит, шарейт",
     "meta_description": "NodX — это веб-приложение для обмена файлами, которое позволяет пользователям легко обмениваться цифровым контентом со своими коллегами в режиме реального времени без облачного хранилища.",
     "og_title": "NodX",
@@ -60,6 +66,12 @@ module.exports = {
       "ru": "Russian",
       "en": "English",
     },
+
+    "h1_title": "NodX",
+    "page_description1": "NodX is a web application for the secure exchange of information. Share digital content in real time without cloud storage.",
+    "page_description2": "NodX allows you to send files to other devices without any configuration - just open https://nod-x.com/ on all devices and they will see each other. Just click the + button on the left side of the page to create a room with a unique URL and share that URL with other people you want to send the file to. As soon as they open this page in a browser on their devices, you will see each other's avatars.",
+    "page_description3": "The application is somewhat similar to SHAREit, except that it requires the Internet to work and one more exception - it does not need to be installed on your device.",
+
     "meta_keywords": "nodx, airdrop, fileshare, p2p fileshare, web airdrop, web shareit, shareit, p2p",
     "meta_description": "NodX is a web-based file sharing application that allows users to easily share digital content with their counterparts in real time, without cloud storage.",
     "og_title": "NodX",

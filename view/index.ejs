@@ -170,6 +170,11 @@
     <link rel="stylesheet" href="/static/styles/scroll.css">
   </head>
   <body>
+    <h1 style="opacity: 0; z-index: -1;"><%=langObj.h1_title %></h1>
+    <p style="opacity: 0; z-index: -1;"><%=langObj.page_description1 %></p>
+    <p style="opacity: 0; z-index: -1;"><%=langObj.page_description2 %></p>
+    <p style="opacity: 0; z-index: -1;"><%=langObj.page_description3 %></p>
+
     <span id="test-char" style="opacity: 0; font-size: 10rem; font-family: monospace;">Y</span>
     <div class=loader-modal>
       <div class="body">
@@ -257,10 +262,10 @@
 
     <div class="share-modal">
       <div class="body">
-        <p><%=langObj.copy_phrase %></p>
+        <span><%=langObj.copy_phrase %></span>
         <div class="link-block">
-          <div class="info-block"><span><%=langObj.copy_result %></span></div>
-          <p id="link">http://127.0.0.1:8000/?id=asdasdasdasdasdasdas</p>
+          <div class="info-block"><span style="margin: 0;"><%=langObj.copy_result %></span></div>
+          <span id="link">http://127.0.0.1:8000/?id=asdasdasdasdasdasdas</span>
           <textarea id="t-link" style="opacity: 0; z-index: -1; position: fixed;" name="name" rows="8" cols="80"></textarea>
           <button id="copy-to-clipboard">
             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="far" data-icon="copy" class="svg-inline--fa fa-copy fa-w-14" role="img" viewBox="0 0 448 512"><path fill="currentColor" d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"></path>
@@ -268,15 +273,15 @@
           </button>
         </div>
         <div class="join-block" style="">
-          <p style="margin: 0;padding: 0;"><%=langObj.join_text_or %></p>
-          <p style="margin-bottom: 20px;padding: 0;margin-top: 0;"><%=langObj.join_text %></p>
+          <span style="margin: 0;padding: 0;"><%=langObj.join_text_or %></span>
+          <span style="margin-bottom: 20px;padding: 0;margin-top: 0;"><%=langObj.join_text %></span>
           <div class="join-body">
             <div>
               <input type="text" id="join-link" />
               <button type="button" id="join-btn"><%=langObj.join_btn %></button>
             </div>
             <div>
-              <span class="error"><%=langObj.join_error %></span>
+              <span style="display: none;" class="error"><%=langObj.join_error %></span>
             </div>
 
           </div>
@@ -293,17 +298,17 @@
         </button>
         <div style="display: flex; flex-direction: column;">
           <img src="/static/img/meta_images/load-icon3.png" style="width: 50%;display: block;margin: 0 auto;" alt="NodX" />
-          <p style="margin: 0;margin-bottom: 20px;"><%=langObj.info_block.description %></p>
+          <span style="margin: 0;margin-bottom: 20px;"><%=langObj.info_block.description %></span>
         </div>
         <div style="display: flex;flex-direction: row;margin: 20px 0px;">
           <img src="/static/img/user.jpg" style="width: 150px;">
-          <p><%=langObj.info_block.instruction.text %> <a class="open-instruction" onclick="open_instruction()"><%=langObj.info_block.instruction.link_text %></a></p>
+          <span><%=langObj.info_block.instruction.text %> <a class="open-instruction" onclick="open_instruction()"><%=langObj.info_block.instruction.link_text %></a></span>
         </div>
         <div>
           <img src="/static/img/webrtc.svg" style="width: 150px;">
-          <p><%=langObj.info_block.tech.text %>
+          <span><%=langObj.info_block.tech.text %>
             <a target="_blank" href="https://webrtc.org"><%=langObj.info_block.tech.link %></a>
-          </p>
+          </span>
         </div>
         <div>
           <div style="margin-top: 20px;">
@@ -363,22 +368,6 @@
 
     </div>
 
-    <div class="lang-modal">
-      <div class="body">
-        <button onclick="close_lang_modal()" class="close" type="button" name="button">
-          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
-        </button>
-        <p>Ваш родной язык Русский?</p>
-        <button class="choose-language-btn">Перейти на руcский <img src="/static/img/ru.svg"/></button>
-        <button class="choose-language-btn">Stay at english <img src="/static/img/us.svg"/></button>
-      </div>
-      <script type="text/javascript">
-        function close_lang_modal(){
-          document.querySelector(".lang-modal").setAttribute("style", "");
-        }
-      </script>
-    </div>
-
     <button type="button" id="share-btn" name="button">
       <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg>
     </button>
@@ -393,11 +382,11 @@
         </div>
         <div class="dropdown">
           <div onclick="get_option(this)" value="ru" class="option">
-            <p></p>
+            <div></div>
             <img src="/static/img/ru.svg" />
           </div>
           <div onclick="get_option(this)" value="en" class="option">
-            <p></p>
+            <div></div>
             <img src="/static/img/us.svg" />
           </div>
         </div>
@@ -536,19 +525,19 @@
     <div class="block-instructions">
       <div class="wrapper">
         <div class="step-1">
-          <p><%=langObj.instruction_part_one.title %></p>
+          <span><%=langObj.instruction_part_one.title %></span>
           <img src="/static/img/part1.png" />
 
           <div class="controll-block">
             <div id="checkbox-block" style="display:flex;">
               <input type="checkbox" id="checkbox-input" />
-              <p style="width: 100%;margin: 0;">
+              <span style="width: 100%;margin: 0;">
                 <%=langObj.instruction_part_one.checkbox_text %>
-              </p>
+              </span>
             </div>
 
             <div class="tooltip">
-              <p><%=langObj.instruction_part_one.tooltip %></p>
+              <span><%=langObj.instruction_part_one.tooltip %></span>
               <img src="/static/img/info.png" alt="" />
             </div>
 
@@ -567,7 +556,7 @@
       </div>
       <div class="wrapper">
         <div class="step-2">
-          <p><%=langObj.instruction_part_two.title %></p>
+          <span><%=langObj.instruction_part_two.title %></span>
           <div class="mouse" style="margin: 20px auto;"></div>
           <div class="controll-block">
             <button title="<%=langObj.instruction_button.back %>" type="button" onclick="back_func(0)" class="back-btn" name="button">
@@ -583,10 +572,10 @@
         <div class="step-3">
           <div class="inner-block">
             <img src="/static/img/you.png" />
-            <p><%=langObj.instruction_part_three.title_one %></p>
+            <span><%=langObj.instruction_part_three.title_one %></span>
           </div>
           <div class="inner-block">
-            <p><%=langObj.instruction_part_three.title_two %></p>
+            <span><%=langObj.instruction_part_three.title_two %></span>
             <img src="/static/img/other.png" alt="" />
           </div>
 
@@ -602,7 +591,7 @@
       </div>
       <div class="wrapper">
         <div class="step-4">
-          <p><%=langObj.instruction_part_foure.fun %><br/><%=langObj.instruction_part_foure.title %></p>
+          <span><%=langObj.instruction_part_foure.fun %><br/><%=langObj.instruction_part_foure.title %></span>
           <video id="preview-video" src="/static/img/part4.mp4" autoplay loop playsinline></video>
           <div class="controll-block">
             <button title="<%=langObj.instruction_button.back %>" type="button" onclick="back_func(2)" class="back-btn" name="button">

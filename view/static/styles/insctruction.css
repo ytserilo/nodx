@@ -36,7 +36,7 @@
   min-width: 280px;
   max-width: 600px;
 }
-.block-instructions .wrapper > div p{
+.block-instructions .wrapper > div span{
   font-family: monospace;
   font-size: 15px;
   text-align: center;
@@ -132,7 +132,7 @@
   transition: all 0.3s;
   opacity: 0;
 }
-.block-instructions .controll-block .tooltip p{
+.block-instructions .controll-block .tooltip span{
   width: 50%;
 }
 .block-instructions .controll-block .tooltip img{
